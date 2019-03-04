@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='anytime.css') }}" />
+<script src="{{ url_for('static', filename='jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='anytime.js') }}"></script>
+
+<head>
+   <title>Current Status</title>
+</head>
+
+<body>
+   <h1>Slow Cooker</h1>
+
+   {% for pin in pins %}
+   <p>{{ pins[pin].name }}
+   {% if pins[pin].state == true %}
+      is currently on (<a href="/{{pin}}/off">turn off</a>)
+   {% else %}
+      is currently off (<a href="/{{pin}}/on">turn on</a>)
+   {% endif %}
+   </p>
+   {% endfor %}
+
+   {% if message %}
+   <h2>{{ message }}</h2>
+   {% endif %}
+   <form method="post" action="/setalarm">
+     <input type="text" name = "temperature" id="temperature" value="Enter temperature (F)" />
+     <input type="text" name = "cooktime" id="cooktime" value="Enter cooking time (minutes)" />
+     <input type="text" name = "alarmtime" id="alarmtime" value="12:34" />
+     <script>
+        AnyTime.picker( "alarmtime",
+        { format: "%H:%i", labelTitle: "Alarm time",
+          labelHour: "Hours", labelMinute: "Minutes" } );
+    </script>
+    <input type="submit" value="Set alarm">
+  </form>
+  <br><br>
+  <form method="post" action="/cooknow">
+    <input type="text" name = "temperature" id="temperature" value="Enter temperature (F)" />
+    <input type="text" name = "cooktime" id="cooktime" value="Enter cooking time (minutes)" />
+   <input type="submit" value="Cook now">
+ </form>
+
+    <br><br>
+   <button onclick="location.href='/toggle1';">Toggle Output 1</button>
+   <button onclick="location.href='/toggle2';">Toggle Output 2</button>
+</body>
+</html>

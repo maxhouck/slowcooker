@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Test{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="radio">GPIO pins</label>
+    <input type="radio" name="pin" value="pin1" checked> Pin 1
+    <input type="radio" name="pin" value="pin2" checked> Pin 2
+    <input type="radio" name="pin" value="pin3" checked> Pin 3
+    <input type="radio" name="pin" value="pin4" checked> Pin 4
+    <input type="radio" name="pin" value="pin5" checked> Pin 5
+    <input type="radio" name="pin" value="pin6" checked> Pin 6
+    <input type="submit" value="Send">
+  </form>
+{% endblock %}
