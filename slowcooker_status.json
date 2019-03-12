@@ -1,6 +1,6 @@
 {
-  "device_status": 1,
-  "coil_activate": [true],
+  "device_status": "off",
+  "coil_activate": [false],
   "coil_status": [false],
   "alarm": {
     "set": true,
