@@ -1,0 +1,12 @@
+{
+  "device_status": 1,
+  "coil_activate": [true],
+  "coil_status": [false],
+  "alarm": {
+    "set": true,
+    "time": [12,12,12,12,12,12]
+  },
+  "cooktime": 60,
+  "temperature_target": 0,
+  "temperature_actual": 0
+}

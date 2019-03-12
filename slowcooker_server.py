@@ -2,8 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import datetime
 from flask import Flask, render_template, request, redirect
-from threading import Thread
-import RPi.GPIO as GPIO
+import multiprocessing
 import time
 from enum import Enum
 
@@ -57,15 +56,20 @@ def cooknow():
 
 @app.route("/toggle1", methods=["GET"])
 def toggle1():
-    if request.method == 'GET':
-        toggle_output(coil1_pin)
-        return redirect("/slowcooker")
+    print("hullaballoo")
+    #toggle_output(coil1_pin)
+    global coil1_status
+    coil1_status = not coil1_status
+    return redirect("/slowcooker")
 
 @app.route("/toggle2", methods=["GET"])
 def toggle2():
-    if request.method == 'GET':
-        toggle_output(coil2_pin)
-        return redirect("/slowcooker")
+    print("hullaballoo", coil2_status)
+    #toggle_output(coil2_pin)
+    global coil2_status
+    coil2_status = not coil2_status
+    print("hullaballoo", coil2_status)
+    return redirect("/slowcooker")
 
 @app.route("/setalarm", methods=["POST"])
 def setalarm():
@@ -75,6 +79,7 @@ def setalarm():
         cooktemperature = request.form['temperature']
         print(alarmtime)
         return redirect("/slowcooker")
+
 # The function below is executed when someone requests a URL with the pin number and action in it:
 @app.route("/<changePin>/<action>")
 def action(changePin, action):
@@ -117,51 +122,28 @@ class Status(Enum):
 #timer_cycle = (ontime:100, temperature:150)
 #alarm_cycle = (alarmtuple, ontime:100, temperature:150)
 
-def check_alarm(alarmtime):
-    currenttime = time.localtime(time.time())
-    if currenttime >= alarmtime :
-        print("alarm sounded ring ring ring")
-        status = Status.heating;
-    else:
-        print("no alarm yet")
 
-def update_outputs():
-    if coil1_status != GPIO.input(coil1_pin) :
-        print("coil1_status changed to", coil1_status)
-    if coil2_status != GPIO.input(coil2_pin) :
-        print("coil2_status changed to", coil2_status)
-    GPIO.output(coil1_pin, coil1_status)
-    GPIO.output(coil2_pin, coil2_status)
-
-def toggle_output(pin):
-    GPIO.output(pin, not GPIO.input(pin))
 
 def main_loop():
-    alarmtime = (2019, 2, 27, 5, 41, 21, 3, 1, 0)
-    check_alarm(alarmtime)
-    alarmtime = (2019, 2, 27, 6, 41, 21, 3, 1, 0)
-    check_alarm(alarmtime)
-    update_outputs()
+    while 1:
+        #alarmtime = (2019, 2, 27, 5, 41, 21, 3, 1, 0)
+        #check_alarm(alarmtime)
+        #alarmtime = (2019, 2, 27, 6, 41, 21, 3, 1, 0)
+        #check_alarm(alarmtime)
+        update_outputs()
 
-    GPIO.cleanup()
+coil1_status = False
+coil2_status = False
+coil1_pin = 24
+coil2_pin = 25
+alarmset = 0
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(coil1_pin, GPIO.OUT)
+GPIO.output(coil1_pin, GPIO.LOW)
+GPIO.setup(coil2_pin, GPIO.OUT)
+GPIO.output(coil2_pin, GPIO.LOW)
 
+#p1 = multiprocessing.Process(target=main_loop, args=())
+#p1.start()
 
-if __name__ == "__main__":
-    coil1_status = 0
-    coil2_status = 0
-    coil1_pin = 24
-    coil2_pin = 25
-    alarmset = 0
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(coil1_pin, GPIO.OUT)
-    GPIO.output(coil1_pin, GPIO.LOW)
-    GPIO.setup(coil2_pin, GPIO.OUT)
-    GPIO.output(coil2_pin, GPIO.LOW)
-
-    threads = []
-#    main = Thread(target=main_loop, args=[])
-#    main.start()
-#    threads.append(main)
-    app.run(host='0.0.0.0', port=80, debug=True)
-    #for process in threads: #wait until main and server both quit
-    #    process.join()
+app.run(host='0.0.0.0', port=80, debug=True)
