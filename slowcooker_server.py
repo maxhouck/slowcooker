@@ -48,13 +48,12 @@ def cooknow():
         json_file =  open('slowcooker_status.json', 'r')
         status_dict = json.load(json_file)
         json_file.close()
-        json_file =  open('slowcooker_status.json', 'w')
-        print(status_dict["alarm"]["set"])
+
         status_dict["device_status"]="heating"
-        status_dict["alarm"]["set"]=True
         status_dict["coil_activate"]=True
-        status_dict["alarm"]["time"]=time.time() + int(request.form['cooktime'])*60
-        status_dict["temperature_target"]=request.form['temperature']
+        status_dict["alarm"]=time.time() + int(request.form['cooktime'])*60
+        status_dict["temperature_target"]=int(request.form['temperature'])
+        json_file =  open('slowcooker_status.json', 'w')
         json.dump(status_dict, json_file, indent=4, sort_keys=True)
         fcntl.lockf(lockfile, fcntl.LOCK_UN) #release lockfile
         lockfile.close()
@@ -78,13 +77,12 @@ def turnoff():
     json_file =  open('slowcooker_status.json', 'r')
     status_dict = json.load(json_file)
     json_file.close()
-    json_file =  open('slowcooker_status.json', 'w')
-    print(status_dict["alarm"]["set"])
+
     status_dict["device_status"]="off"
-    status_dict["alarm"]["set"]=False
     status_dict["coil_activate"]=False
-    status_dict["alarm"]["time"]=0
+    status_dict["alarm"]=0
     status_dict["temperature_target"]=0
+    json_file =  open('slowcooker_status.json', 'w')
     json.dump(status_dict, json_file, indent=4, sort_keys=True)
     fcntl.lockf(lockfile, fcntl.LOCK_UN) #release lockfile
     lockfile.close()
@@ -108,13 +106,11 @@ def cancel():
     json_file =  open('slowcooker_status.json', 'r')
     status_dict = json.load(json_file)
     json_file.close()
-    json_file =  open('slowcooker_status.json', 'w')
-    print(status_dict["alarm"]["set"])
     status_dict["device_status"]="off"
-    status_dict["alarm"]["set"]=False
     status_dict["coil_activate"]=False
-    status_dict["alarm"]["time"]=0
+    status_dict["alarm"]=0
     status_dict["temperature_target"]=0
+    json_file =  open('slowcooker_status.json', 'w')
     json.dump(status_dict, json_file, indent=4, sort_keys=True)
     fcntl.lockf(lockfile, fcntl.LOCK_UN) #release lockfile
     lockfile.close()
@@ -140,7 +136,6 @@ def toggle():
     json_file.close()
     json_file =  open('slowcooker_status.json', 'w')
     status_dict["device_status"]="debug"
-    status_dict["alarm"]["set"]=False
     status_dict["coil_activate"]=not status_dict["coil_activate"]
     json.dump(status_dict, json_file, indent=4, sort_keys=True)
     fcntl.lockf(lockfile, fcntl.LOCK_UN) #release lockfile
@@ -168,17 +163,15 @@ def setalarm():
         status_dict = json.load(json_file)
         json_file.close()
         json_file =  open('slowcooker_status.json', 'w')
-        print(status_dict["alarm"]["set"])
         status_dict["device_status"]="waiting"
-        status_dict["alarm"]["set"]=True
         split = request.form['alarmtime'].split(':')
         hours = int(split[0])
         minutes = int(split[1])
-        alarmtime = time.time() + hours*3600 + minutes*60
-        status_dict["alarm"]["time"]=alarmtime
+        alarmtime = time.localtime()
+        alarmtime = time.mktime((alarmtime[0],alarmtime[1],alarmtime[2],hours,minutes,alarmtime[5],alarmtime[6],alarmtime[7],alarmtime[8]))
+        status_dict["alarm"]=alarmtime
         status_dict["cooktime"]=request.form['cooktime']
-        status_dict["temperature_target"]=request.form['temperature']
-        print(status_dict["alarm"]["set"])
+        status_dict["temperature_target"]=int(request.form['temperature'])
         json.dump(status_dict, json_file, indent=4, sort_keys=True)
         fcntl.lockf(lockfile, fcntl.LOCK_UN) #release lockfile
         lockfile.close()
