@@ -3,6 +3,7 @@ import fcntl
 import os
 import RPi.GPIO as GPIO
 import time
+import MAX31855
 
 from enum import Enum
 
@@ -22,21 +23,28 @@ def check_alarm():
 
 def update_coil():
     global status_dict
-    coil1_pin = 8
-    coil2_pin = 7
-    GPIO.setmode(GPIO.BOARD)
+    coil1_pin = 17
+    GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(coil1_pin, GPIO.OUT)
-    GPIO.setup(coil2_pin, GPIO.OUT)
     status_dict["coil_status"] = GPIO.input(coil1_pin)
     if status_dict["coil_activate"] != status_dict["coil_status"] : #if they dont match, change pins and reset coil_status
         print("coil_status changed to", status_dict["coil_activate"])
         GPIO.output(coil1_pin, status_dict["coil_activate"])
-        GPIO.output(coil2_pin, status_dict["coil_activate"])
-        status_dict["coil_status"] = GPIO.input(coil2_pin)
+        status_dict["coil_status"] = GPIO.input(coil1_pin)
 
 def get_temperature(): #needs to be implemented
+    csPin =22
+    misoPin = 9
+    mosiPin = 10
+    clkPin = 11
+    max = MAX31855.max31855(csPin,misoPin,mosiPin,clkPin)
+    temp = max.readTemp()
+    GPIO.cleanup()
+    print(temp)
+    return temp
     return 100
+
 
 while True:
     try:
@@ -62,28 +70,28 @@ elif status_dict["device_status"] == "waiting":
     print("status is waiting")
     alarm = check_alarm()
     if alarm: #transition to heating state
-        status_dict["device_status"] = "heating"
+        status_dict["device_status"] = "HEATING"
         status_dict["coil_activate"] = True
         status_dict["alarm"] = time.time() + int(status_dict["cooktime"])*60
 
-elif status_dict["device_status"] == "heating":
+elif status_dict["device_status"] == "HEATING":
     print("status is HEATING")
     alarm = check_alarm()
-    print(alarm)
     if alarm: #transition to Off
         status_dict["device_status"] = "off"
         status_dict["coil_activate"] = False
-    if status_dict["temperature_actual"] > (hysteresis + status_dict["temperature_target"]):
-        status_dict["device_status"] == "COOLING"
+    elif status_dict["temperature_actual"] > (hysteresis + status_dict["temperature_target"]):
+        status_dict["device_status"] = "COOLING"
         status_dict["coil_activate"] = False
 
-elif status_dict["device_status"] == "cooling":
+elif status_dict["device_status"] == "COOLING":
     print("status is COOLING")
+    alarm = check_alarm()
     if alarm: #transition to Off
         status_dict["device_status"] = "off"
         status_dict["coil_activate"] = False
-    if status_dict["temperature_actual"] < (status_dict["temperature_target"] - hysteresis):
-            status_dict[device_status] == "HEATING"
+    elif status_dict["temperature_actual"] < (status_dict["temperature_target"] - hysteresis):
+            status_dict["device_status"] = "HEATING"
             status_dict["coil_activate"] = True
 
 elif status_dict["device_status"] == "debug":

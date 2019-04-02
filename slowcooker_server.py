@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect
 import json
 import fcntl
 import os
+import struct
 from enum import Enum
 
 app = Flask(__name__)
@@ -49,7 +50,7 @@ def cooknow():
         status_dict = json.load(json_file)
         json_file.close()
 
-        status_dict["device_status"]="heating"
+        status_dict["device_status"]="HEATING"
         status_dict["coil_activate"]=True
         status_dict["alarm"]=time.time() + int(request.form['cooktime'])*60
         status_dict["temperature_target"]=int(request.form['temperature'])

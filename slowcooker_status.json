@@ -1,9 +1,9 @@
 {
-    "alarm": 1553893323.650332, 
+    "alarm": 1554049260.374468, 
     "coil_activate": false, 
     "coil_status": 0, 
     "cooktime": "1", 
     "device_status": "off", 
-    "temperature_actual": 100, 
-    "temperature_target": 500
+    "temperature_actual": 71.5, 
+    "temperature_target": 100
 }
